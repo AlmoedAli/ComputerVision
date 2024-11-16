@@ -1,6 +1,6 @@
 
 import cv2 as cv
-from lib_detection import load_model, detect_lp, im2single
+# from lib_detection import load_model, detect_lp, im2single
 import math
 import numpy as np
 import time
