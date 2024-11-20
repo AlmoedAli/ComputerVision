@@ -15,36 +15,38 @@ LIST= {0: "0", 1:"1", 2:"2", 3:"3", 4:"4", 5:"5", 6:"6", 7:"7", 8:"8", 9:"9", 10
         23:"N", 24:"O", 25:"P", 26:"Q", 27:"R", 28:"S", 29:"T", 30:"U", 31:"V", 32:"W", 33:"X",
         34:"Y", 35:"Z"}
 
+def convertImageInverse(image):
+  a= -1
+  b = 255
+  rows= image.shape[0]
+  columns= image.shape[1]
+  
+  for i in range(rows):
+    for j in range(columns):
+      image[i][j]= a*image[i][j] + b
+  return image
 
 def ConvertImageCharacter(image):
-    HSV= cv.cvtColor(image, cv.COLOR_BGR2HSV)
-    H, S, V= cv.split(HSV)
-    
-    imageGray= V
-    imageGray= cv.cvtColor(image, cv.COLOR_BGR2GRAY)
+    imageGrayOriginal= cv.cvtColor(image, cv.COLOR_BGR2GRAY)
     kernel= cv.getStructuringElement(cv.MORPH_RECT, (3, 3))
-
-
-    imageTopHat= cv.morphologyEx(imageGray, cv.MORPH_TOPHAT, kernel, iterations= 7)
-    imageBlackHat= cv.morphologyEx(imageGray, cv.MORPH_BLACKHAT, kernel, iterations= 7)
-
-    imagePlusTopHat= cv.add(imageGray, imageTopHat)
-    imagePlusTopHatMinusBlackHat= cv.subtract(imagePlusTopHat, imageBlackHat)
     
-    imageGaussNoise= cv.GaussianBlur(imagePlusTopHatMinusBlackHat, (3, 3), 5)
+    imageInverse = convertImageInverse(imageGrayOriginal)
+    
+    imageInverseClosing= cv.morphologyEx(imageInverse, cv.MORPH_CLOSE, kernel)
+    
+    imageInverseClosingOpening = cv.morphologyEx(imageInverseClosing, cv.MORPH_OPEN, kernel)
+    
+    imageGaussNoise= cv.GaussianBlur(imageInverseClosingOpening, (3, 3), 5)
 
     # imageAdaptiveThreshold= cv.adaptiveThreshold(imageGaussNoise, 150, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, 29, 9)
-    _, imageThreshold= cv.threshold(imageGaussNoise, 100, 255, cv.THRESH_BINARY)
-
-    return imageThreshold
-
-
-if __name__== "__main__":
+    _, imageThreshold= cv.threshold(imageGaussNoise, 130, 255, cv.THRESH_BINARY)
     
-    # Using the WPOD_NET to capture the plate license
-    
+    return convertImageInverse(imageThreshold)
+
+def main():
+    fileName = "result.txt"
     model= joblib.load("trainModel.joblib")
-    pathImage= "test.jpg"
+    pathImage= "TVB.jpg"
 
     image= cv.imread(pathImage)
  
@@ -57,9 +59,7 @@ if __name__== "__main__":
     ArrayArea= []
     for i in contour:
         x, y, w, h= cv.boundingRect(i)
-        # if w*h > 1000 and 1.5 < h/w < 5:
-        print("w*h= ", w*h, ", h/w= ", h/w)
-        if 1000 > w*h > 300 and 0.8 <= h/w < 5:
+        if 1000 > w*h > 100 and 0.8 <= h/w < 5:
             ArrayArea.append(w*h)
             
     SortedArrayArea= sorted(ArrayArea)
@@ -83,7 +83,13 @@ if __name__== "__main__":
         vector= subImage.flatten().reshape(1, -1)
         string+= LIST[model.predict(vector)[0][0]]
         image= cv.rectangle(image, (x, y), (x+w, y+h), (255, 0, 0), 3)
-    print(string)
+    with open(fileName, "w") as file:
+        file.write(string)
+        file.close()
     cv.imshow("Rotation", image)
     cv.waitKey(0)
+
+if __name__== "__main__":
+    main()
+   
     

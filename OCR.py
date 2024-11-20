@@ -218,10 +218,10 @@ def drawLossValueEpoch(X, y):
   plt.show()
     
 def ConvertImageCharacter(image):
-  HSV= cv.cvtColor(image, cv.COLOR_BGR2HSV)
-  H, S, V= cv.split(HSV)
+  # HSV= cv.cvtColor(image, cv.COLOR_BGR2HSV)
+  # H, S, V= cv.split(HSV)
   
-  imageGray= V
+  # imageGray= V
   imageGray= cv.cvtColor(image, cv.COLOR_BGR2GRAY)
   kernel= cv.getStructuringElement(cv.MORPH_RECT, (3, 3))
 
