@@ -46,7 +46,7 @@ def ConvertImageCharacter(image):
 def main():
     fileName = "result.txt"
     model= joblib.load("trainModel.joblib")
-    pathImage= "TVB.jpg"
+    pathImage= "test.jpg"
 
     image= cv.imread(pathImage)
  
@@ -59,7 +59,7 @@ def main():
     ArrayArea= []
     for i in contour:
         x, y, w, h= cv.boundingRect(i)
-        if 1000 > w*h > 100 and 0.8 <= h/w < 5:
+        if  w*h > 100 and 0.8 <= h/w < 5:
             ArrayArea.append(w*h)
             
     SortedArrayArea= sorted(ArrayArea)
